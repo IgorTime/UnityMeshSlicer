@@ -46,7 +46,7 @@ namespace IgorTime.MeshSlicer
 			ResetNextVertexId();
 		}
 
-		private int AddNewVertex(SlicerVertex v)
+		private int AddVertex(SlicerVertex v)
 		{
 			if (idToVertexData.TryGetValue(v.ID, out var vData))
 			{
@@ -67,9 +67,9 @@ namespace IgorTime.MeshSlicer
 		                        in SlicerVertex v2,
 		                        in SlicerVertex v3)
 		{
-			var i1 = AddNewVertex(v1);
-			var i2 = AddNewVertex(v2);
-			var i3 = AddNewVertex(v3);
+			var i1 = AddVertex(v1);
+			var i2 = AddVertex(v2);
+			var i3 = AddVertex(v3);
 
 			triangles.Add(i1);
 			triangles.Add(i2);
