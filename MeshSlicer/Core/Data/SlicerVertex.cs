@@ -1,7 +1,6 @@
 using UnityEngine;
 
 namespace IgorTime.MeshSlicer
-
 {
 	public struct SlicerVertex
 	{
@@ -10,7 +9,6 @@ namespace IgorTime.MeshSlicer
 		public Vector3 Normal;
 		public Vector2 UV0;
 		public int Index;
-
 		public static SlicerVertex Create(in Vector3 v,
 		                                  in Vector3 n,
 		                                  in Vector2 uv0,
@@ -22,13 +20,20 @@ namespace IgorTime.MeshSlicer
 				UV0 = uv0,
 				ID = id
 			};
-
-		public void Unpack(out Vector3 v, out Vector3 n, out Vector2 uv, out int id)
+	}
+	
+	public static class SlicerVertexExtension
+	{
+		public static void Unpack(this in SlicerVertex vertex, 
+		                          out Vector3 v, 
+		                          out Vector3 n, 
+		                          out Vector2 uv,
+		                          out int id)
 		{
-			v = Position;
-			n = Normal;
-			uv = UV0;
-			id = ID;
+			v = vertex.Position;
+			n = vertex.Normal;
+			uv = vertex.UV0;
+			id = vertex.ID;
 		}
 	}
 }

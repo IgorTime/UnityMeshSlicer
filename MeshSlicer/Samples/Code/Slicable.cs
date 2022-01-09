@@ -6,9 +6,11 @@ using UnityEngine;
 public class Slicable : MonoBehaviour
 {
 	[SerializeField] private bool isSolid;
+	[SerializeField] private Material sliceMaterial;
 
 	public Mesh Mesh { get; private set; }
-	public Material Material { get; private set; }
+	public Material MainMaterial { get; private set; }
+	public Material SliceMaterial => sliceMaterial;
 
 	public bool IsSolid
 	{
@@ -19,9 +21,9 @@ public class Slicable : MonoBehaviour
 	private void Awake()
 	{
 		var meshFilter = GetComponent<MeshFilter>();
-		Mesh = meshFilter.mesh;
+		Mesh = meshFilter.sharedMesh;
 
 		var meshRenderer = GetComponent<MeshRenderer>();
-		Material = meshRenderer.material;
+		MainMaterial = meshRenderer.sharedMaterial;
 	}
 }

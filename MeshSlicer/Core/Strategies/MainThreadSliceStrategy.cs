@@ -29,87 +29,88 @@ namespace IgorTime.MeshSlicer
 			meshPositive.Clear();
 			meshNegative.Clear();
 			intersections.Clear();
-
-			if (mesh.subMeshCount > 1)
-			{
-				throw new Exception("Unfortunately Slicer does not support " +
-				                    "meshes with more than one subMesh");
-			}
 			
-			mesh.GetTriangles(meshTriangles, 0);
 			mesh.GetVertices(meshVertices);
 			mesh.GetNormals(meshNormals);
 			mesh.GetUVs(0, meshUv);
 			var hasSlice = false;
 
-			var trianglesCount = meshTriangles.Count;
-			for (var i = 0; i < trianglesCount; i += 3)
+			var indexOffset = 0;
+			for (var subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; subMeshIndex++)
 			{
-				var i1 = i;
-				var i2 = i + 1;
-				var i3 = i + 2;
+				mesh.GetTriangles(meshTriangles, subMeshIndex);
 				
-				var v1 = meshVertices[meshTriangles[i1]];
-				var v2 = meshVertices[meshTriangles[i2]];
-				var v3 = meshVertices[meshTriangles[i3]];
-
-				var n1 = meshNormals[meshTriangles[i1]];
-				var n2 = meshNormals[meshTriangles[i2]];
-				var n3 = meshNormals[meshTriangles[i3]];
-
-				var uv1 = meshUv[meshTriangles[i2]];
-				var uv2 = meshUv[meshTriangles[i3]];
-				var uv3 = meshUv[meshTriangles[i3]];
-
-				var v1Side = plane.GetSide(v1);
-				var v2Side = plane.GetSide(v2);
-				var v3Side = plane.GetSide(v3);
-				
-				var vertexData1 = SlicerVertex.Create(v1, n1, uv1, i1);
-				var vertexData2 = SlicerVertex.Create(v2, n2, uv2, i2);
-				var vertexData3 = SlicerVertex.Create(v3, n3, uv3, i3);
-				
-				if (v1Side == v2Side && v2Side == v3Side)
+				var trianglesCount = meshTriangles.Count;
+				for (var i = 0; i < trianglesCount; i += 3)
 				{
-					var meshData = v1Side ? meshPositive : meshNegative;
-					meshData.AddTriangle(vertexData1, vertexData2, vertexData3);
-					continue;
+					var i1 = i;
+					var i2 = i + 1;
+					var i3 = i + 2;
+
+					var v1 = meshVertices[meshTriangles[i1]];
+					var v2 = meshVertices[meshTriangles[i2]];
+					var v3 = meshVertices[meshTriangles[i3]];
+
+					var n1 = meshNormals[meshTriangles[i1]];
+					var n2 = meshNormals[meshTriangles[i2]];
+					var n3 = meshNormals[meshTriangles[i3]];
+
+					var uv1 = meshUv[meshTriangles[i2]];
+					var uv2 = meshUv[meshTriangles[i3]];
+					var uv3 = meshUv[meshTriangles[i3]];
+
+					var v1Side = plane.GetSide(v1);
+					var v2Side = plane.GetSide(v2);
+					var v3Side = plane.GetSide(v3);
+
+					var vertexData1 = SlicerVertex.Create(v1, n1, uv1, indexOffset + i1);
+					var vertexData2 = SlicerVertex.Create(v2, n2, uv2, indexOffset + i2);
+					var vertexData3 = SlicerVertex.Create(v3, n3, uv3, indexOffset + i3);
+
+					if (v1Side == v2Side && v2Side == v3Side)
+					{
+						var meshData = v1Side ? meshPositive : meshNegative;
+						meshData.AddTriangle(vertexData1, vertexData2, vertexData3, subMeshIndex);
+						continue;
+					}
+
+					hasSlice = true;
+
+					if (v1Side == v2Side)
+					{
+						ScenarioWhenThirdVertexAlone(plane,
+						                             vertexData1,
+						                             vertexData2,
+						                             vertexData3,
+						                             v1Side);
+					}
+					else if (v1Side == v3Side)
+					{
+						ScenarioWhenSecondVertexAlone(plane,
+						                              vertexData1,
+						                              vertexData2,
+						                              vertexData3,
+						                              v1Side);
+					}
+					else
+					{
+						ScenarioWhenFirstVertexAlone(plane,
+						                             vertexData1,
+						                             vertexData2,
+						                             vertexData3,
+						                             v1Side);
+					}
+
+					for (var j = 0; j < trianglesBuffer.Length; j++)
+					{
+						var meshData = trianglesBuffer[j].IsPositive
+							? meshPositive
+							: meshNegative;
+						meshData.AddTriangle(trianglesBuffer[j], subMeshIndex);
+					}
 				}
 
-				hasSlice = true;
-				
-				if (v1Side == v2Side)
-				{
-					ScenarioWhenThirdVertexAlone(plane, 
-					                             vertexData1, 
-					                             vertexData2, 
-					                             vertexData3, 
-					                             v1Side);
-				}
-				else if (v1Side == v3Side)
-				{
-					ScenarioWhenSecondVertexAlone(plane,
-					                              vertexData1, 
-					                              vertexData2, 
-					                              vertexData3, 
-					                              v1Side);
-				}
-				else
-				{
-					ScenarioWhenFirstVertexAlone(plane,
-					                             vertexData1, 
-					                             vertexData2, 
-					                             vertexData3, 
-					                             v1Side);
-				}
-
-				for (var j = 0; j < trianglesBuffer.Length; j++)
-				{
-					var meshData = trianglesBuffer[j].IsPositive
-						? meshPositive
-						: meshNegative;
-					meshData.AddTriangle(trianglesBuffer[j]);
-				}
+				indexOffset += trianglesCount;
 			}
 
 			if (!hasSlice)
@@ -119,7 +120,7 @@ namespace IgorTime.MeshSlicer
 
 			if (isSolid)
 			{
-				FillEmptySpace(plane.normal);
+				FillEmptySpace(plane.normal, mesh.subMeshCount);
 			}
 
 			out1 = meshPositive.ToUnityMesh();
@@ -127,9 +128,9 @@ namespace IgorTime.MeshSlicer
 		}
 		
 		private void ScenarioWhenFirstVertexAlone(in Plane plane,
-		                                          SlicerVertex vertex1,
-		                                          SlicerVertex vertex2,
-		                                          SlicerVertex vertex3,
+		                                          in SlicerVertex vertex1,
+		                                          in SlicerVertex vertex2,
+		                                          in SlicerVertex vertex3,
 		                                          in bool v1Side)
 		{
 			vertex1.Unpack(out var v1, out var n1, out var uv1, out var id1);
@@ -156,9 +157,9 @@ namespace IgorTime.MeshSlicer
 		}
 
 		private void ScenarioWhenSecondVertexAlone(in Plane plane,
-		                                           SlicerVertex vertex1,
-		                                           SlicerVertex vertex2,
-		                                           SlicerVertex vertex3,
+		                                           in SlicerVertex vertex1,
+		                                           in SlicerVertex vertex2,
+		                                           in SlicerVertex vertex3,
 		                                           in bool v1Side)
 		{
 			vertex1.Unpack(out var v1, out var n1, out var uv1, out var id1);
@@ -185,9 +186,9 @@ namespace IgorTime.MeshSlicer
 		}
 
 		private void ScenarioWhenThirdVertexAlone(in Plane plane,
-		                                          SlicerVertex vertex1,
-		                                          SlicerVertex vertex2,
-		                                          SlicerVertex vertex3,
+		                                          in SlicerVertex vertex1,
+		                                          in SlicerVertex vertex2,
+		                                          in SlicerVertex vertex3,
 		                                          bool v1Side)
 		{
 			vertex1.Unpack(out var v1, out var n1, out var uv1, out var id1);
@@ -229,7 +230,7 @@ namespace IgorTime.MeshSlicer
 			return ray.GetPoint(distance);
 		}
 
-		private void FillEmptySpace(in Vector3 planeNormal)
+		private void FillEmptySpace(in Vector3 planeNormal, in int subMeshIndex)
 		{
 			var middlePoint = CalculateMiddlePoint(intersections);
 			var positiveMidPointVertexId = meshPositive.GetNextVertexId();
@@ -264,12 +265,14 @@ namespace IgorTime.MeshSlicer
 				meshPositive.AddTriangle(v3, v2, v1,
 				                             -normal, -normal, -normal,
 				                             emptyUV, emptyUV, emptyUV,
-				                             pID3, emptyID, pID1);
+				                             pID3, emptyID, pID1,
+				                             subMeshIndex);
 
 				meshNegative.AddTriangle(v1, v2, v3,
 				                             normal, normal, normal,
 				                             emptyUV, emptyUV, emptyUV,
-				                             nID1, emptyID, nID3);
+				                             nID1, emptyID, nID3,
+				                             subMeshIndex);
 			}
 		}
 

@@ -24,11 +24,12 @@ public class SliceTool
 			return false;
 		}
 
-		part1 = CreateObject($"{objectToSlice.name}_slice1", mesh1, objectToSlice.Material);
-		part2 = CreateObject($"{objectToSlice.name}_slice2", mesh2, objectToSlice.Material);
+		var materials = new [] { objectToSlice.MainMaterial, objectToSlice.SliceMaterial };
+		part1 = CreateObject($"{objectToSlice.name}_slice1", mesh1, materials);
+		part2 = CreateObject($"{objectToSlice.name}_slice2", mesh2, materials);
 		return true;
 
-		GameObject CreateObject(string name, Mesh mesh, Material material)
+		GameObject CreateObject(string name, Mesh mesh, Material[] materials)
 		{
 			var result = new GameObject(name);
 
@@ -39,7 +40,7 @@ public class SliceTool
 			meshFilter.mesh = mesh;
 
 			var meshRenderer = result.AddComponent<MeshRenderer>();
-			meshRenderer.material = material;
+			meshRenderer.sharedMaterials = materials;
 
 			var meshCollider = result.AddComponent<MeshCollider>();
 			meshCollider.sharedMesh = mesh;
