@@ -261,18 +261,19 @@ namespace IgorTime.MeshSlicer
 					(nID1, nID3) = (nID3, nID1);
 				}
 
-				
-				meshPositive.AddTriangle(v3, v2, v1,
-				                             -normal, -normal, -normal,
-				                             emptyUV, emptyUV, emptyUV,
-				                             pID3, emptyID, pID1,
-				                             subMeshIndex);
+				{
+					var vertex1 = SlicerVertex.Create(v3, -normal, emptyUV, pID3);
+					var vertex2 = SlicerVertex.Create(v2, -normal, emptyUV, emptyID);
+					var vertex3 = SlicerVertex.Create(v1, -normal, emptyUV, pID1);
+					meshPositive.AddTriangle(vertex1, vertex2, vertex3, subMeshIndex);
+				}
 
-				meshNegative.AddTriangle(v1, v2, v3,
-				                             normal, normal, normal,
-				                             emptyUV, emptyUV, emptyUV,
-				                             nID1, emptyID, nID3,
-				                             subMeshIndex);
+				{
+					var vertex1 = SlicerVertex.Create(v1, normal, emptyUV, nID1);
+					var vertex2 = SlicerVertex.Create(v2, normal, emptyUV, emptyID);
+					var vertex3 = SlicerVertex.Create(v3, normal, emptyUV, nID3);
+					meshNegative.AddTriangle(vertex1, vertex2, vertex3, subMeshIndex);
+				}
 			}
 		}
 

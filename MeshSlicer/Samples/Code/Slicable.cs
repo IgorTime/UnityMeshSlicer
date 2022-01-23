@@ -9,8 +9,25 @@ public class Slicable : MonoBehaviour
 	[SerializeField] private Material sliceMaterial;
 
 	public Mesh Mesh { get; private set; }
-	public Material MainMaterial { get; private set; }
-	public Material SliceMaterial => sliceMaterial;
+	public Material[] MainMaterials { get; private set; }
+
+	public Material[] GetAllMaterials()
+	{
+		var result = new Material[MainMaterials.Length + 1];
+		for (var i = 0; i < MainMaterials.Length; i++)
+		{
+			result[i] = MainMaterials[i];
+		}
+
+		result[result.Length - 1] = sliceMaterial; 
+		return result;
+	}
+
+	public Material SliceMaterial
+	{
+		get => sliceMaterial;
+		set => sliceMaterial = value;
+	}
 
 	public bool IsSolid
 	{
@@ -24,6 +41,6 @@ public class Slicable : MonoBehaviour
 		Mesh = meshFilter.sharedMesh;
 
 		var meshRenderer = GetComponent<MeshRenderer>();
-		MainMaterial = meshRenderer.sharedMaterial;
+		MainMaterials = meshRenderer.sharedMaterials;
 	}
 }

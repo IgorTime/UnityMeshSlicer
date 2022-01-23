@@ -36,7 +36,7 @@ namespace IgorTime.MeshSlicer
 		private readonly Dictionary<int, SlicerVertex> idToVertexData =
 			new Dictionary<int, SlicerVertex>(DEFAULT_CAPACITY);
 
-		private readonly SortedDictionary<int, List<int>> sumMeshToIndex =
+		private readonly SortedDictionary<int, List<int>> subMeshToIndices =
 			new SortedDictionary<int, List<int>>();
 
 		private int nextVertexId = int.MaxValue;
@@ -46,7 +46,7 @@ namespace IgorTime.MeshSlicer
 		{
 			allTriangles.Clear();
 			idToVertexData.Clear();
-			sumMeshToIndex.Clear();
+			subMeshToIndices.Clear();
 			ResetNextVertexId();
 		}
 
@@ -76,9 +76,9 @@ namespace IgorTime.MeshSlicer
 			var i2 = AddVertex(v2);
 			var i3 = AddVertex(v3);
 			
-			if (!sumMeshToIndex.TryGetValue(subMeshIndex, out var trianglesCollection))
+			if (!subMeshToIndices.TryGetValue(subMeshIndex, out var trianglesCollection))
 			{
-				sumMeshToIndex.Add(subMeshIndex, trianglesCollection = new List<int>(DEFAULT_CAPACITY));
+				subMeshToIndices.Add(subMeshIndex, trianglesCollection = new List<int>(DEFAULT_CAPACITY));
 			}
 			
 			trianglesCollection.Add(i1);
@@ -115,7 +115,7 @@ namespace IgorTime.MeshSlicer
 		public Mesh ToUnityMesh()
 		{
 			allTriangles.Clear();
-			foreach (var indices in sumMeshToIndex.Values)
+			foreach (var indices in subMeshToIndices.Values)
 			{
 				if (indices.Count == 0)
 				{
@@ -141,10 +141,10 @@ namespace IgorTime.MeshSlicer
 			result.SetIndexBufferParams(allTriangles.Count, IndexFormat.UInt32);
 			result.SetIndexBufferData(allTriangles, 0, 0, allTriangles.Count);
 			
-			result.subMeshCount = sumMeshToIndex.Count;
+			result.subMeshCount = subMeshToIndices.Count;
 			var subMeshIndex = 0;
 			var indicesOffset = 0;
-			foreach (var indices in sumMeshToIndex.Values)
+			foreach (var indices in subMeshToIndices.Values)
 			{
 				if (indices.Count == 0)
 				{

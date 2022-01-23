@@ -24,12 +24,11 @@ public class SliceTool
 			return false;
 		}
 
-		var materials = new [] { objectToSlice.MainMaterial, objectToSlice.SliceMaterial };
-		part1 = CreateObject($"{objectToSlice.name}_slice1", mesh1, materials);
-		part2 = CreateObject($"{objectToSlice.name}_slice2", mesh2, materials);
+		part1 = CreateObject($"{objectToSlice.name}_slice1", mesh1, objectToSlice);
+		part2 = CreateObject($"{objectToSlice.name}_slice2", mesh2, objectToSlice);
 		return true;
 
-		GameObject CreateObject(string name, Mesh mesh, Material[] materials)
+		GameObject CreateObject(string name, Mesh mesh, Slicable original)
 		{
 			var result = new GameObject(name);
 
@@ -40,7 +39,7 @@ public class SliceTool
 			meshFilter.mesh = mesh;
 
 			var meshRenderer = result.AddComponent<MeshRenderer>();
-			meshRenderer.sharedMaterials = materials;
+			meshRenderer.sharedMaterials = original.GetAllMaterials();
 
 			var meshCollider = result.AddComponent<MeshCollider>();
 			meshCollider.sharedMesh = mesh;
@@ -48,6 +47,7 @@ public class SliceTool
 
 			var slicable = result.AddComponent<Slicable>();
 			slicable.IsSolid = objectToSlice.IsSolid;
+			slicable.SliceMaterial = original.SliceMaterial;
 
 			result.AddComponent<Rigidbody>();
 			result.layer = LayerMask.NameToLayer("Slicable");
