@@ -35,11 +35,13 @@ public class SliceTool
 			result.transform.SetPositionAndRotation(objectToSlice.transform.position,
 			                                        objectToSlice.transform.rotation);
 
+			mesh.OptimizeSubMeshes(original.GetAllMaterials(), out var optimizedMaterials);
+			
 			var meshFilter = result.AddComponent<MeshFilter>();
 			meshFilter.mesh = mesh;
 
 			var meshRenderer = result.AddComponent<MeshRenderer>();
-			meshRenderer.sharedMaterials = original.GetAllMaterials();
+			meshRenderer.sharedMaterials = optimizedMaterials;
 
 			var meshCollider = result.AddComponent<MeshCollider>();
 			meshCollider.sharedMesh = mesh;
