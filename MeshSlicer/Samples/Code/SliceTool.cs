@@ -17,31 +17,39 @@ public class SliceTool
 		var mesh = objectToSlice.Mesh;
 		var isSolid = objectToSlice.IsSolid;
 
-		Slicer.Slice(mesh, plane, isSolid, out var mesh1, out var mesh2);
+		Slicer.Slice(mesh, 
+		             plane, 
+		             isSolid, 
+		             objectToSlice.MainMaterials, 
+		             objectToSlice.SliceMaterial,
+		             out var mesh1, 
+		             out var materials1,
+		             out var mesh2,
+		             out var materials2);
 
 		if (!mesh1 || !mesh2)
 		{
 			return false;
 		}
 
-		part1 = CreateObject($"{objectToSlice.name}_slice1", mesh1, objectToSlice);
-		part2 = CreateObject($"{objectToSlice.name}_slice2", mesh2, objectToSlice);
+		part1 = CreateObject($"{objectToSlice.name}_slice1", mesh1, materials1, objectToSlice);
+		part2 = CreateObject($"{objectToSlice.name}_slice2", mesh2, materials2, objectToSlice);
 		return true;
 
-		GameObject CreateObject(string name, Mesh mesh, Slicable original)
+		GameObject CreateObject(string name, Mesh mesh, Material[] materials, Slicable original)
 		{
 			var result = new GameObject(name);
 
 			result.transform.SetPositionAndRotation(objectToSlice.transform.position,
 			                                        objectToSlice.transform.rotation);
 
-			mesh.OptimizeSubMeshes(original.GetAllMaterials(), out var optimizedMaterials);
+			// mesh.OptimizeSubMeshes(original.GetAllMaterials(), out var optimizedMaterials);
 			
 			var meshFilter = result.AddComponent<MeshFilter>();
 			meshFilter.mesh = mesh;
 
 			var meshRenderer = result.AddComponent<MeshRenderer>();
-			meshRenderer.sharedMaterials = optimizedMaterials;
+			meshRenderer.sharedMaterials = materials;
 
 			var meshCollider = result.AddComponent<MeshCollider>();
 			meshCollider.sharedMesh = mesh;

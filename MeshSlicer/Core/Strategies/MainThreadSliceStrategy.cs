@@ -20,11 +20,22 @@ namespace IgorTime.MeshSlicer
 		public void Slice(Mesh mesh,
 		                  Plane plane,
 		                  bool isSolid,
+		                  Material[] mainMaterials,
+		                  Material sliceMaterial,
 		                  out Mesh out1,
-		                  out Mesh out2)
+		                  out Material[] materials1,
+		                  out Mesh out2,
+		                  out Material[] materials2)
 		{
+			if (mesh.subMeshCount != mainMaterials.Length)
+			{
+				throw new Exception("Different amount of materials and SubMeshes");
+			}
+			
 			out1 = null;
 			out2 = null;
+			materials1 = null;
+			materials2 = null;
 
 			meshPositive.Clear();
 			meshNegative.Clear();
@@ -39,6 +50,7 @@ namespace IgorTime.MeshSlicer
 			for (var subMeshIndex = 0; subMeshIndex < mesh.subMeshCount; subMeshIndex++)
 			{
 				mesh.GetTriangles(meshTriangles, subMeshIndex);
+				var material = mainMaterials[subMeshIndex];
 				
 				var trianglesCount = meshTriangles.Count;
 				for (var i = 0; i < trianglesCount; i += 3)
@@ -70,7 +82,7 @@ namespace IgorTime.MeshSlicer
 					if (v1Side == v2Side && v2Side == v3Side)
 					{
 						var meshData = v1Side ? meshPositive : meshNegative;
-						meshData.AddTriangle(vertexData1, vertexData2, vertexData3, subMeshIndex);
+						meshData.AddTriangle(vertexData1, vertexData2, vertexData3, material);
 						continue;
 					}
 
@@ -106,7 +118,7 @@ namespace IgorTime.MeshSlicer
 						var meshData = trianglesBuffer[j].IsPositive
 							? meshPositive
 							: meshNegative;
-						meshData.AddTriangle(trianglesBuffer[j], subMeshIndex);
+						meshData.AddTriangle(trianglesBuffer[j], material);
 					}
 				}
 
@@ -120,11 +132,11 @@ namespace IgorTime.MeshSlicer
 
 			if (isSolid)
 			{
-				FillEmptySpace(plane.normal, mesh.subMeshCount);
+				FillEmptySpace(plane.normal, sliceMaterial);
 			}
 
-			out1 = meshPositive.ToUnityMesh();
-			out2 = meshNegative.ToUnityMesh();
+			out1 = meshPositive.ToUnityMesh(out materials1);
+			out2 = meshNegative.ToUnityMesh(out materials2);
 		}
 		
 		private void ScenarioWhenFirstVertexAlone(in Plane plane,
@@ -230,7 +242,7 @@ namespace IgorTime.MeshSlicer
 			return ray.GetPoint(distance);
 		}
 
-		private void FillEmptySpace(in Vector3 planeNormal, in int subMeshIndex)
+		private void FillEmptySpace(in Vector3 planeNormal, Material material)
 		{
 			var middlePoint = CalculateMiddlePoint(intersections);
 			var positiveMidPointVertexId = meshPositive.GetNextVertexId();
@@ -265,14 +277,14 @@ namespace IgorTime.MeshSlicer
 					var vertex1 = SlicerVertex.Create(v3, -normal, emptyUV, pID3);
 					var vertex2 = SlicerVertex.Create(v2, -normal, emptyUV, emptyID);
 					var vertex3 = SlicerVertex.Create(v1, -normal, emptyUV, pID1);
-					meshPositive.AddTriangle(vertex1, vertex2, vertex3, subMeshIndex);
+					meshPositive.AddTriangle(vertex1, vertex2, vertex3, material);
 				}
 
 				{
 					var vertex1 = SlicerVertex.Create(v1, normal, emptyUV, nID1);
 					var vertex2 = SlicerVertex.Create(v2, normal, emptyUV, emptyID);
 					var vertex3 = SlicerVertex.Create(v3, normal, emptyUV, nID3);
-					meshNegative.AddTriangle(vertex1, vertex2, vertex3, subMeshIndex);
+					meshNegative.AddTriangle(vertex1, vertex2, vertex3, material);
 				}
 			}
 		}

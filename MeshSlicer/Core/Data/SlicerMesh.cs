@@ -36,8 +36,8 @@ namespace IgorTime.MeshSlicer
 		private readonly Dictionary<int, SlicerVertex> idToVertexData =
 			new Dictionary<int, SlicerVertex>(DEFAULT_CAPACITY);
 
-		private readonly SortedDictionary<int, List<int>> subMeshToIndices =
-			new SortedDictionary<int, List<int>>();
+		private readonly Dictionary<Material, List<int>> materialToIndices =
+			new Dictionary<Material, List<int>>();
 
 		private int nextVertexId = int.MaxValue;
 		public const int EMPTY_VERTEX_ID = -1;
@@ -46,7 +46,7 @@ namespace IgorTime.MeshSlicer
 		{
 			allTriangles.Clear();
 			idToVertexData.Clear();
-			subMeshToIndices.Clear();
+			materialToIndices.Clear();
 			ResetNextVertexId();
 		}
 
@@ -70,15 +70,15 @@ namespace IgorTime.MeshSlicer
 		public void AddTriangle(in SlicerVertex v1,
 		                        in SlicerVertex v2,
 		                        in SlicerVertex v3,
-		                        in int subMeshIndex)
+		                        Material material)
 		{
 			var i1 = AddVertex(v1);
 			var i2 = AddVertex(v2);
 			var i3 = AddVertex(v3);
 			
-			if (!subMeshToIndices.TryGetValue(subMeshIndex, out var trianglesCollection))
+			if (!materialToIndices.TryGetValue(material, out var trianglesCollection))
 			{
-				subMeshToIndices.Add(subMeshIndex, trianglesCollection = new List<int>(DEFAULT_CAPACITY));
+				materialToIndices.Add(material, trianglesCollection = new List<int>(DEFAULT_CAPACITY));
 			}
 			
 			trianglesCollection.Add(i1);
@@ -86,36 +86,16 @@ namespace IgorTime.MeshSlicer
 			trianglesCollection.Add(i3);
 		}
 
-		public void AddTriangle(in Vector3 v1,
-		                        in Vector3 v2,
-		                        in Vector3 v3,
-		                        in Vector3 n1,
-		                        in Vector3 n2,
-		                        in Vector3 n3,
-		                        in Vector2 uv1,
-		                        in Vector2 uv2,
-		                        in Vector2 uv3,
-		                        in int id1,
-		                        in int id2,
-		                        in int id3,
-		                        int subMeshIndex)
-		{
-			var vertex1 = SlicerVertex.Create(v1, n1, uv1, id1);
-			var vertex2 = SlicerVertex.Create(v2, n2, uv2, id2);
-			var vertex3 = SlicerVertex.Create(v3, n3, uv3, id3);
-			AddTriangle(vertex1, vertex2, vertex3, subMeshIndex);
-		}
-
 		public void AddTriangle(in SlicerTriangle slicerTriangle, 
-		                        in int subMeshIndex)
+		                        Material material)
 		{
-			AddTriangle(slicerTriangle.V1, slicerTriangle.V2, slicerTriangle.V3, subMeshIndex);
+			AddTriangle(slicerTriangle.V1, slicerTriangle.V2, slicerTriangle.V3, material);
 		}
 
-		public Mesh ToUnityMesh()
+		public Mesh ToUnityMesh(out Material[] materials)
 		{
 			allTriangles.Clear();
-			foreach (var indices in subMeshToIndices.Values)
+			foreach (var indices in materialToIndices.Values)
 			{
 				if (indices.Count == 0)
 				{
@@ -141,16 +121,20 @@ namespace IgorTime.MeshSlicer
 			result.SetIndexBufferParams(allTriangles.Count, IndexFormat.UInt32);
 			result.SetIndexBufferData(allTriangles, 0, 0, allTriangles.Count);
 			
-			result.subMeshCount = subMeshToIndices.Count;
+			result.subMeshCount = materialToIndices.Count;
+			materials = new Material[result.subMeshCount];
+			
 			var subMeshIndex = 0;
 			var indicesOffset = 0;
-			foreach (var indices in subMeshToIndices.Values)
+			foreach (var kv in materialToIndices)
 			{
+				var indices = kv.Value;
 				if (indices.Count == 0)
 				{
 					break;
 				}
-				
+
+				materials[subMeshIndex] = kv.Key;
 				result.SetSubMesh(subMeshIndex, new SubMeshDescriptor(indicesOffset, indices.Count));
 				indicesOffset += indices.Count;
 				subMeshIndex++;

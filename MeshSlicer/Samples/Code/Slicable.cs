@@ -13,14 +13,33 @@ public class Slicable : MonoBehaviour
 
 	public Material[] GetAllMaterials()
 	{
-		var result = new Material[MainMaterials.Length + 1];
+		var hasDuplicated = HasDuplicatedMaterial();
+		var count = !hasDuplicated ? MainMaterials.Length + 1 : MainMaterials.Length;
+		var result = new Material[count];
 		for (var i = 0; i < MainMaterials.Length; i++)
 		{
 			result[i] = MainMaterials[i];
 		}
 
-		result[result.Length - 1] = sliceMaterial; 
+		if (!hasDuplicated)
+		{
+			result[result.Length - 1] = sliceMaterial;
+		}
+
 		return result;
+	}
+
+	private bool HasDuplicatedMaterial()
+	{
+		foreach (var material in MainMaterials)
+		{
+			if (material == SliceMaterial)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public Material SliceMaterial
