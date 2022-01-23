@@ -20,5 +20,16 @@ namespace IgorTime.MeshSlicer
 			V3 = SlicerVertex.Create(v3, n3, uv3, id3);
 			IsPositive = isPositive;
 		}
+
+		public SlicerTriangle(in SlicerVertex v1, 
+		                      in SlicerVertex v2,
+		                      in SlicerVertex v3,
+		                      in bool isPositive)
+		{
+			V1 = v1;
+			V2 = v2;
+			V3 = v3;
+			IsPositive = isPositive;
+		}
 	}
 }

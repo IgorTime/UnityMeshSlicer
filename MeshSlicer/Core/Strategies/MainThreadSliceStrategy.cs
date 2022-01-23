@@ -138,9 +138,9 @@ namespace IgorTime.MeshSlicer
 		                                          in SlicerVertex vertex3,
 		                                          in bool v1Side)
 		{
-			vertex1.Unpack(out var v1, out var n1, out var uv1, out var id1);
-			vertex2.Unpack(out var v2, out var n2, out var uv2, out var id2);
-			vertex3.Unpack(out var v3, out var n3, out var uv3, out var id3);
+			vertex1.Unpack(out var v1, out var n1, out var uv1, out _);
+			vertex2.Unpack(out var v2, out var n2, out var uv2, out _);
+			vertex3.Unpack(out var v3, out var n3, out var uv3, out _);
 
 			var i1 = FindIntersection(v1, v2, plane, out var t1);
 			var i2 = FindIntersection(v1, v3, plane, out var t2);
@@ -149,15 +149,12 @@ namespace IgorTime.MeshSlicer
 			var iN1 = Vector3.Lerp(n1, n2, t1);
 			var iN2 = Vector3.Lerp(n1, n3, t2);
 			var iID = SlicerMesh.EMPTY_VERTEX_ID;
-
-			trianglesBuffer[0] =
-				new SlicerTriangle(v1, i1, i2, n1, iN1, iN2, uv1, iUV1, iUV2, id1, iID, iID,
-				                   v1Side);
-			trianglesBuffer[1] =
-				new SlicerTriangle(i1, v2, v3, iN1, n2, n3, iUV1, uv2, uv3, iID, id2, id3, !v1Side);
-			trianglesBuffer[2] =
-				new SlicerTriangle(i1, v3, i2, iN1, n3, iN2, iUV1, uv3, iUV2, iID, id3, iID,
-				                   !v1Side);
+			
+			var iVertex1 = SlicerVertex.Create(i1, iN1, iUV1, iID);
+			var iVertex2 = SlicerVertex.Create(i2, iN2, iUV2, iID);
+			trianglesBuffer[0] = new SlicerTriangle(vertex1, iVertex1, iVertex2, v1Side);
+			trianglesBuffer[1] = new SlicerTriangle(iVertex1, vertex2, vertex3, !v1Side);
+			trianglesBuffer[2] = new SlicerTriangle(iVertex1, vertex3, iVertex2, !v1Side);
 
 			intersections.Add(i1);
 			intersections.Add(i2);
@@ -169,9 +166,9 @@ namespace IgorTime.MeshSlicer
 		                                           in SlicerVertex vertex3,
 		                                           in bool v1Side)
 		{
-			vertex1.Unpack(out var v1, out var n1, out var uv1, out var id1);
-			vertex2.Unpack(out var v2, out var n2, out var uv2, out var id2);
-			vertex3.Unpack(out var v3, out var n3, out var uv3, out var id3);
+			vertex1.Unpack(out var v1, out var n1, out var uv1, out _);
+			vertex2.Unpack(out var v2, out var n2, out var uv2, out _);
+			vertex3.Unpack(out var v3, out var n3, out var uv3, out _);
 
 			var i1 = FindIntersection(v1, v2, plane, out var t1);
 			var i2 = FindIntersection(v2, v3, plane, out var t2);
@@ -180,15 +177,12 @@ namespace IgorTime.MeshSlicer
 			var iN1 = Vector3.Lerp(n1, n2, t1);
 			var iN2 = Vector3.Lerp(n2, n3, t2);
 			var iID = SlicerMesh.EMPTY_VERTEX_ID;
-
-			trianglesBuffer[0] =
-				new SlicerTriangle(v1, i1, v3, n1, iN1, n3, uv1, iUV1, uv3, id1, iID, id3, v1Side);
-			trianglesBuffer[1] =
-				new SlicerTriangle(i1, i2, v3, iN1, iN2, n3, iUV1, iUV2, uv3, iID, iID, id3,
-				                   v1Side);
-			trianglesBuffer[2] =
-				new SlicerTriangle(i1, v2, i2, iN1, n2, iN2, iUV1, uv2, iUV2, iID, id2, iID,
-				                   !v1Side);
+			
+			var iVertex1 = SlicerVertex.Create(i1, iN1, iUV1, iID);
+			var iVertex2 = SlicerVertex.Create(i2, iN2, iUV2, iID);
+			trianglesBuffer[0] = new SlicerTriangle(vertex1, iVertex1, vertex3, v1Side);
+			trianglesBuffer[1] = new SlicerTriangle(iVertex1, iVertex2, vertex3, v1Side);
+			trianglesBuffer[2] = new SlicerTriangle(iVertex1, vertex2, iVertex2, !v1Side);
 
 			intersections.Add(i1);
 			intersections.Add(i2);
@@ -200,9 +194,9 @@ namespace IgorTime.MeshSlicer
 		                                          in SlicerVertex vertex3,
 		                                          bool v1Side)
 		{
-			vertex1.Unpack(out var v1, out var n1, out var uv1, out var id1);
-			vertex2.Unpack(out var v2, out var n2, out var uv2, out var id2);
-			vertex3.Unpack(out var v3, out var n3, out var uv3, out var id3);
+			vertex1.Unpack(out var v1, out var n1, out var uv1, out _);
+			vertex2.Unpack(out var v2, out var n2, out var uv2, out _);
+			vertex3.Unpack(out var v3, out var n3, out var uv3, out _);
 
 			var i1 = FindIntersection(v2, v3, plane, out var t1);
 			var i2 = FindIntersection(v1, v3, plane, out var t2);
@@ -211,15 +205,12 @@ namespace IgorTime.MeshSlicer
 			var iN1 = Vector3.Lerp(n2, n3, t1);
 			var iN2 = Vector3.Lerp(n1, n3, t2);
 			var iID = SlicerMesh.EMPTY_VERTEX_ID;
-
-			trianglesBuffer[0] =
-				new SlicerTriangle(v1, v2, i1, n1, n2, iN1, uv1, uv2, iUV1, id1, id2, iID, v1Side);
-			trianglesBuffer[1] =
-				new SlicerTriangle(v1, i1, i2, n1, iN1, iN2, uv1, iUV1, iUV2, id1, iID, iID,
-				                   v1Side);
-			trianglesBuffer[2] =
-				new SlicerTriangle(i1, v3, i2, iN1, n3, iN2, iUV1, uv3, iUV2, iID, id3, iID,
-				                   !v1Side);
+			
+			var iVertex1 = SlicerVertex.Create(i1, iN1, iUV1, iID);
+			var iVertex2 = SlicerVertex.Create(i2, iN2, iUV2, iID);
+			trianglesBuffer[0] = new SlicerTriangle(vertex1, vertex2, iVertex1, v1Side);
+			trianglesBuffer[1] = new SlicerTriangle(vertex1, iVertex1, iVertex2, v1Side);
+			trianglesBuffer[2] = new SlicerTriangle(iVertex1, vertex3, iVertex2, !v1Side);
 
 			intersections.Add(i1);
 			intersections.Add(i2);
