@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnityEngine.Profiling;
 
-public class SliceInput : MonoBehaviour
+public class SliceRaycaster : MonoBehaviour
 {
 	[SerializeField] private Camera cam = default;
 	[SerializeField] private LayerMask layerMask = default;
