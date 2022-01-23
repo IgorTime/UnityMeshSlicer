@@ -3,10 +3,9 @@ Simple mesh slicer plugin for Unity. It's quite simple and fast, and generates s
 
 Supported features:
 - only one UV channel
-- only meshes with single submesh
+- meshes with multiple submeshes
 - not copy blendposes and boneweights
 
 Plans:
 - adding multithreaded slicing algorithm using Jobs
-- adding support to use more submeshes
 
