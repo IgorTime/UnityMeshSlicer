@@ -6,25 +6,9 @@ namespace IgorTime.MeshSlicer
 	{
 		private static readonly ISliceStrategy mainThreadSlicer = new MainThreadSliceStrategy();
 
-		public static void Slice(Mesh mesh,
-		                         Plane plane,
-		                         bool isSolid,
-		                         Material[] mainMaterials,
-		                         Material sliceMaterial,
-		                         out Mesh part1,
-		                         out Material[] materials1,
-		                         out Mesh part2,
-		                         out Material[] materials2)
+		public static bool Slice(in SliceInput input, Plane plane, out SliceOutput output)
 		{
-			mainThreadSlicer.Slice(mesh, 
-			                       plane,
-			                       isSolid,
-			                       mainMaterials,
-			                       sliceMaterial,
-			                       out part1,
-			                       out materials1,
-			                       out part2,
-			                       out materials2);
+			return mainThreadSlicer.Slice(input, plane, out output);
 		}
 	}
 }

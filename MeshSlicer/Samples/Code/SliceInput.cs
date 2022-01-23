@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Profiling;
 
 public class SliceInput : MonoBehaviour
 {
@@ -84,7 +85,6 @@ public class SliceInput : MonoBehaviour
 		{
 			return;
 		}
-
 
 		var forward = cam.transform.forward;
 		var sliceVector = startHitPoint - endHitPoint;

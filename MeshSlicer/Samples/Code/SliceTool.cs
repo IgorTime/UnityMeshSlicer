@@ -16,24 +16,19 @@ public class SliceTool
 
 		var mesh = objectToSlice.Mesh;
 		var isSolid = objectToSlice.IsSolid;
+		var input = new IgorTime.MeshSlicer.SliceInput(mesh, 
+		                                               objectToSlice.MainMaterials,
+		                                               objectToSlice.SliceMaterial,
+		                                               isSolid);
 
-		Slicer.Slice(mesh, 
-		             plane, 
-		             isSolid, 
-		             objectToSlice.MainMaterials, 
-		             objectToSlice.SliceMaterial,
-		             out var mesh1, 
-		             out var materials1,
-		             out var mesh2,
-		             out var materials2);
-
-		if (!mesh1 || !mesh2)
+		var hasSlice = Slicer.Slice(input, plane, out var output);
+		if (!hasSlice)
 		{
 			return false;
 		}
 
-		part1 = CreateObject($"{objectToSlice.name}_slice1", mesh1, materials1, objectToSlice);
-		part2 = CreateObject($"{objectToSlice.name}_slice2", mesh2, materials2, objectToSlice);
+		part1 = CreateObject($"{objectToSlice.name}_slice1", output.Mesh1, output.Materials1, objectToSlice);
+		part2 = CreateObject($"{objectToSlice.name}_slice2", output.Mesh2, output.Materials2, objectToSlice);
 		return true;
 
 		GameObject CreateObject(string name, Mesh mesh, Material[] materials, Slicable original)
@@ -43,8 +38,6 @@ public class SliceTool
 			result.transform.SetPositionAndRotation(objectToSlice.transform.position,
 			                                        objectToSlice.transform.rotation);
 
-			// mesh.OptimizeSubMeshes(original.GetAllMaterials(), out var optimizedMaterials);
-			
 			var meshFilter = result.AddComponent<MeshFilter>();
 			meshFilter.mesh = mesh;
 

@@ -39,6 +39,9 @@ namespace IgorTime.MeshSlicer
 		private readonly Dictionary<Material, List<int>> materialToIndices =
 			new Dictionary<Material, List<int>>();
 
+		private readonly IndicesCache indicesCache = 
+			new IndicesCache(buffersCount: 5, DEFAULT_CAPACITY);
+
 		private int nextVertexId = int.MaxValue;
 		public const int EMPTY_VERTEX_ID = -1;
 
@@ -46,7 +49,7 @@ namespace IgorTime.MeshSlicer
 		{
 			allTriangles.Clear();
 			idToVertexData.Clear();
-			materialToIndices.Clear();
+			indicesCache.ClearCache();
 			ResetNextVertexId();
 		}
 
@@ -78,7 +81,9 @@ namespace IgorTime.MeshSlicer
 			
 			if (!materialToIndices.TryGetValue(material, out var trianglesCollection))
 			{
-				materialToIndices.Add(material, trianglesCollection = new List<int>(DEFAULT_CAPACITY));
+				var cacheIndex = materialToIndices.Count;
+				trianglesCollection = indicesCache.GetIndicesByIndex(cacheIndex);
+				materialToIndices.Add(material, trianglesCollection);
 			}
 			
 			trianglesCollection.Add(i1);
